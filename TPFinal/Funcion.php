@@ -40,7 +40,7 @@ class Funcion
         $this->setHorainicio($funcion['hora_inicio']);
         $this->setDuracion($funcion['duracion']);
         $this->setPrecio($funcion['precio']);
-        $this->setObjTeatro($funcion['idteatro']);
+        $this->setObjTeatro($funcion['objteatro']);
     }
 
     public function getNombre()
@@ -107,7 +107,9 @@ class Funcion
 
     public function __toString(): string
     {
-        $cadena = "\nNombre de la funcion: {$this->getNombre()}\n Hora de inicio: {$this->getHorainicio()}\n Duracion: {$this->getDuracion()} \nPrecio: {$this->getPrecio()}\n";
+        $horaIni=$this->getHoraInicio();
+        $horaIni= substr($horaIni,0,5);
+        $cadena = "\nIdFuncion: {$this->idfuncion}\nNombre de la funcion: {$this->getNombre()}\nHora de inicio: {$horaIni}\nDuracion: {$this->getDuracion()}\nPrecio: {$this->getPrecio()}\n";
 
         return $cadena;
     }
@@ -120,23 +122,22 @@ class Funcion
     public function buscar($id)
     {
         $base = new BaseDatos();
-        $consulta = "SELECT * FROM funcion WHERE idfuncion=$id";
+        $consulta = "SELECT * FROM funcion WHERE idfuncion={$id}";
         $exito = false;
         if ($base->Iniciar()) {
             if ($base->Ejecutar($consulta)) {
                 if ($row2 = $base->Registro()) {
                     $objTeatro = new Teatro();
                     $objTeatro->buscar($row2['idteatro']);
+                    $row2['objteatro'] = $objTeatro;
                     $this->cargar($row2);
                     $exito = true;
                 }
             } else {
-                $aux = $base->getError();
-                $this->setMensajeoperacion($aux);
+                $this->setMensajeoperacion($base->getError());
             }
         } else {
-            $aux = $base->getError();
-            $this->setMensajeoperacion($aux);
+            $this->setMensajeoperacion($base->getError());
         }
         return $exito;
     }
@@ -153,22 +154,16 @@ class Funcion
             if ($base->Ejecutar($consultaFuncion)) {
                 $colFunciones = array();
                 while ($row2 = $base->Registro()) {
-                    $idTeatro = $row2['idteatro'];
-
-                    $funcion = new Funcion();
-                    $objTeatro = new Teatro();
-                    $objTeatro->buscar($idTeatro);
-                    $row2[] = ['objteatro' => $objTeatro];
-                    $funcion->cargar($row2);
-                    array_push($colFunciones, $funcion);
+                    //$idTeatro = $row2['idteatro'];
+                    $unaFuncion = new Funcion();
+                    $unaFuncion->buscar($row2['idfuncion']);
+                    array_push($colFunciones, $unaFuncion);
                 }
             } else {
-                $aux = $base->getError();
-                $this->setMensajeoperacion($aux);
+                $this->setMensajeoperacion($base->getError());
             }
         } else {
-            $aux = $base->getError();
-            $this->setMensajeoperacion($aux);
+            $this->setMensajeoperacion($base->getError());
         }
         return $colFunciones;
     }
@@ -177,16 +172,15 @@ class Funcion
     {
         $base = new BaseDatos();
         $exito = false;
-        $consultaInsertar = "INSERT INTO funcion(idfuncion,nombre,hora_inicio,duracion,precio,idteatro) 
+        $teatroActual = $this->getObjTeatro();
+        $idteatro = $teatroActual->getIdTeatro();
+        $consulta = "INSERT INTO funcion(idfuncion,nombre,hora_inicio,duracion,precio,idteatro) 
                                 VALUES(null,'{$this->getNombre()}','{$this->getHorainicio()}',
-                                {$this->getDuracion()},{$this->getPrecio()},{$this->getObjTeatro()})";
-        echo "\n".$consultaInsertar."\n";
+                                {$this->getDuracion()},{$this->getPrecio()},{$idteatro})";
+
         if ($base->Iniciar()) {
-            if ($id = $base->devuelveIDInsercion($consultaInsertar)) {
+            if ($id = $base->devuelveIDInsercion($consulta)) {
                 $this->setIdfuncion($id);
-                $unTeatro = new Teatro();
-                $unTeatro->buscar($this->getObjTeatro());
-                $this->setObjTeatro($unTeatro);
                 $exito = true;
             } else {
                 $this->setmensajeoperacion($base->getError());
@@ -205,11 +199,9 @@ class Funcion
         $base = new BaseDatos();
         $consulta = "UPDATE funcion SET nombre='{$this->getNombre()}',hora_inicio='{$this->getHorainicio()}',duracion={$this->getDuracion()},precio={$this->getPrecio()} 
         WHERE idfuncion = {$this->getIdfuncion()}";
-        echo $consulta."\n";
         if ($base->Iniciar()) {
             if ($base->Ejecutar($consulta)) {
                 $exito = true;
-
             } else {
                 $this->setmensajeoperacion($base->getError());
             }
@@ -224,8 +216,8 @@ class Funcion
         $base = new BaseDatos();
         $exito = false;
         if ($base->Iniciar()) {
-            $qryDelete = "DELETE FROM funcion WHERE idfuncion= {$this->getIdfuncion()}";
-            if ($base->Ejecutar($qryDelete)) {
+            $consulta = "DELETE FROM funcion WHERE idfuncion= {$this->getIdfuncion()}";
+            if ($base->Ejecutar($consulta)) {
                 $exito = true;
             } else {
                 $this->setmensajeoperacion($base->getError());

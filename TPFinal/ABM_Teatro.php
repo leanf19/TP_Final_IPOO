@@ -22,6 +22,7 @@ class ABM_Teatro
         if ($existe) {
             $unTeatro->eliminar();
         }
+        return $existe;
     }
 
     //Modificar:Teatro - Se encarga de buscar el teatro con idteatro y si existe lo modifica con los valores pasados por parametro y actualiza la BD
@@ -29,14 +30,12 @@ class ABM_Teatro
     {
         $unTeatro = new Teatro();
         $exito = $unTeatro->buscar($idteatro);
-        $modifica = false;
         if ($exito) {
             $unTeatro->setNombre($nombre);
             $unTeatro->setDireccion($direccion);
             $unTeatro->modificar();
-            $modifica=true;
         }
-        return $modifica;
+        return $exito;
     }
 
 

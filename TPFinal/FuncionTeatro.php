@@ -11,6 +11,11 @@ class FuncionTeatro extends Funcion
         parent:: __construct();
     }
 
+    public function setMensajeoperacion($mensajeoperacion): void
+    {
+        $this->mensajeoperacion = $mensajeoperacion;
+    }
+
     public function cargar($funcion)
     {
         parent::cargar($funcion);
@@ -19,10 +24,10 @@ class FuncionTeatro extends Funcion
     public function buscar($idfuncion)
     {
         $base = new BaseDatos();
-        $consultaFuncion = "SELECT * FROM funcion_teatro WHERE idfuncion={$idfuncion}";
+        $consulta = "SELECT * FROM funcion_teatro WHERE idfuncion={$idfuncion}";
         $exito = false;
         if ($base->Iniciar()) {
-            if ($base->Ejecutar($consultaFuncion)) {
+            if ($base->Ejecutar($consulta)) {
                 if ($base->Registro()) {
                     parent::buscar($idfuncion);
                     $exito = true;
@@ -38,19 +43,19 @@ class FuncionTeatro extends Funcion
 
     public function listar($condicion = "")
     {
-        $auxFuncTeatro = null;
+        $colFuncionCine = null;
         $base = new BaseDatos();
-        $consulta = "SELECT * FROM funcion_teatro t, funcion f";
+        $consulta = "SELECT * FROM funcion INNER JOIN funcion_teatro t on funcion.idfuncion = t.idfuncion";
         if ($condicion != "") {
             $consulta = "{$consulta} WHERE {$condicion}";
         }
         if ($base->Iniciar()) {
             if ($base->Ejecutar($consulta)) {
-                $auxFuncTeatro = array();
+                $colFuncionCine = array();
                 while ($row2 = $base->Registro()) {
                     $funcionTeatro = new FuncionTeatro();
-                    $funcionTeatro->cargar($row2);
-                    array_push($auxFuncTeatro, $funcionTeatro);
+                    $funcionTeatro->buscar($row2['idfuncion']);
+                    array_push($colFuncionCine, $funcionTeatro);
                 }
             } else {
                 $this->setmensajeoperacion($base->getError());
@@ -58,7 +63,7 @@ class FuncionTeatro extends Funcion
         } else {
             $this->setmensajeoperacion($base->getError());
         }
-        return $auxFuncTeatro;
+        return $colFuncionCine;
     }
 
     public function insertar()

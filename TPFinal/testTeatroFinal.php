@@ -7,8 +7,9 @@ require_once "ABM_FuncionTeatro.php";
 
 function menu()
 {
+
     do {
-        $opcionTeatro = -1;
+
         echo "************INGRESE UNA OPCION DEL MENU***********\n";
         echo "1.- Visualizar la informacion de los teatros de la base de datos \n";
         echo "2.- Agregar un nuevo teatro a la base de datos\n";
@@ -40,41 +41,43 @@ function menuTeatros()
 {
     $unTeatro = new Teatro();
     $auxTeatros = $unTeatro->listar();
+
     if (count($auxTeatros) != 0) {
+
         foreach ($auxTeatros as $teatro) {
-            $teatro->__toString();
+            print $teatro->__toString();
+
         }
         do {
-            echo "***Seleccione el id de uno de estos teatros***\n";
+            echo "\n***Seleccione el id de uno de estos teatros***\n";
             $idteatro = trim(fgets(STDIN));
             $exito = $unTeatro->buscar($idteatro);
         } while (!$exito);
 
         echo "***Teatro obtenido, seleccione una de las siguientes opciones***\n";
         do {
+           // $exito = $unTeatro->buscar($idteatro);
             echo "1.- Mostrar Informacion del teatro\n";
-            echo "2.- Modificar datos del teatro\n";
+            echo "2.- Modificar datos del teatro(nombre,direccion,funciones)\n";
             echo "3.- Calcular costo total por uso del teatro\n";
             echo "4.- Volver al menu de inicio\n";
-            echo "5.- Salir\n";
             $opcion = trim(fgets(STDIN));
             switch ($opcion) {
                 case 1:
-                    $unTeatro->__toString();
+                  print  $unTeatro->__toString();
                     break;
                 case 2:
                     modificarDatos($unTeatro);
                     break;
                 case 3:
-                    echo "Costo total: {$unTeatro->darCosto()}\n";
+                    echo "Costo por el uso de las instalaciones: {$unTeatro->darCosto()}\n";
                     break;
                 case 4:
-                    menu();
                     break;
                 default:
-                    echo "Ingrese una opción correcta(1-5)\n";
+                    echo "Opcion no valida, ingrese una opcion->(1-4)\n";
             }
-        } while ($opcion <> 5);
+        } while ($opcion <> 4);
 
     } else {
         echo "***No hay teatros para mostrar***\n";
@@ -99,7 +102,7 @@ function modificarDatos($unTeatro)
                 modificarTeatro($id);
                 break;
             case 2:
-                altaFuncion($id);
+                altaFuncion($unTeatro);
                 break;
             case 3:
                 modificarFuncion($unTeatro);
@@ -116,23 +119,47 @@ function modificarDatos($unTeatro)
 //Modifica el nombre y la direccion del teatro con la id pasada por parametro
 function modificarTeatro($idTeatro)
 {
+    $unTeatro = new Teatro();
+    $unTeatro->buscar($idTeatro);
+    $nombre=$unTeatro->getNombre();
+    $direccion=$unTeatro->getDireccion();
+    $exito = false;
+    $aux = 0;
 
-    echo "Ingrese el nuevo nombre del teatro seleccionado: \n";
-    $nombre = trim(fgets(STDIN));
-    echo "Ingrese la nueva direccion del teatro seleccionado: \n";
-    $direccion = trim(fgets(STDIN));
+    echo "Desea modificar el nombre del teatro? (s/n):\n";
+    $resp = trim(fgets(STDIN));
 
-    ABM_Teatro::modificarTeatro($idTeatro, $nombre, $direccion);
+    if($resp == 's') {
+        echo "Ingrese el nuevo nombre del teatro seleccionado: \n";
+        $nombre = trim(fgets(STDIN));
+        $aux++;
+    }
+    $resp = "n";
+    echo "Desea modificar la direccion del teatro? (s/n):\n";
+    $resp = trim(fgets(STDIN));
+
+    if($resp == 's'){
+        echo "Ingrese la nueva direccion del teatro seleccionado: \n";
+        $direccion = trim(fgets(STDIN));
+        $aux++;
+    }
+    if($aux != 0){
+    $exito =ABM_Teatro::modificarTeatro($idTeatro, $nombre, $direccion);
+
+    if($exito){
+        echo "Datos del teatro modificados con exito!!!!\n";
+            }
+    }
 }
 
-function altaFuncion($idteatro)
+function altaFuncion($unTeatro)
 {
 
     echo "Ingrese el nombre de la función a agregar:\n";
     $nombreFuncion = strtolower(trim(fgets(STDIN)));
 
     do {
-        echo "\n Ingrese el tipo de funcion (Cine,Teatro,Musical):\n";
+        echo "Ingrese el tipo de funcion (Cine,Teatro,Musical):\n";
         $tipo = strtolower(trim(fgets(STDIN)));
     } while($tipo != "cine" && $tipo != "musical" && $tipo != "teatro");
     do {
@@ -150,21 +177,21 @@ function altaFuncion($idteatro)
 
     switch ($tipo) {
         case "teatro":
-            $exito = ABM_FuncionTeatro::altaFuncionTeatro(0, $nombreFuncion, $horaInicio, $duracion, $precio, $idteatro);
+            $exito = ABM_FuncionTeatro::altaFuncionTeatro(0, $nombreFuncion, $horaInicio, $duracion, $precio, $unTeatro);
             break;
         case "cine":
             echo "Ingrese el pais de origen:\n";
             $pais = trim(fgets(STDIN));
             echo "Ingrese el genero:\n";
             $genero = trim(fgets(STDIN));
-            $exito = ABM_FuncionCine::altaFuncionCine(0, $nombreFuncion, $horaInicio, $duracion, $precio, $idteatro, $genero, $pais);
+            $exito = ABM_FuncionCine::altaFuncionCine(0, $nombreFuncion, $horaInicio, $duracion, $precio, $unTeatro, $genero, $pais);
             break;
         case "musical":
             echo "Ingrese el director:\n";
             $director = trim(fgets(STDIN));
             echo "Ingrese la cantidad de espectadores:\n";
-            $espectadores = trim(fgets(STDIN));
-            $exito = ABM_FuncionMusical::altaFuncionMusical(0, $nombreFuncion, $horaInicio, $duracion, $precio, $idteatro, $director, $espectadores);
+            $elenco = trim(fgets(STDIN));
+            $exito = ABM_FuncionMusical::altaFuncionMusical(0, $nombreFuncion, $horaInicio, $duracion, $precio, $unTeatro, $director, $elenco);
             break;
     }
     if (!$exito) {
@@ -183,9 +210,9 @@ function modificarFuncion($unTeatro)
     do {
         echo $cadenaFunciones;
         echo "Ingrese el id de la función a modificar: \n";
-        $idfuncion = trim(fgets(STDIN));
+        $idfuncion = strtolower(trim(fgets(STDIN)));
         $exito= $unaFuncion->buscar($idfuncion);
-    } while (!is_numeric($idfuncion) || !$exito );
+    } while (!is_numeric($idfuncion) || !$exito);
 
     echo "Ingrese el nuevo nombre de la función: \n";
     $nombreFuncion = trim(fgets(STDIN));
@@ -203,8 +230,7 @@ function modificarFuncion($unTeatro)
         $duracion = trim(fgets(STDIN));
     } while (!is_numeric($duracion));
 
-    //$unaFuncion = $unTeatro->buscar($idfuncion);
-
+    $unaFuncion = $unTeatro->obtenerFunciones($idfuncion);
     $exito = false;
     switch (get_class($unaFuncion)) {
         case "FuncionCine":
@@ -212,20 +238,22 @@ function modificarFuncion($unTeatro)
             $pais = trim(fgets(STDIN));
             echo "Ingrese el genero de la funcion de cine:\n";
             $genero = trim(fgets(STDIN));
-            $exito = ABM_FuncionCine::modificarFuncionCine($idfuncion, $nombreFuncion, $horaInicio, $duracion, $precioFuncion, $unTeatro->getIdTeatro(), $pais, $genero);
+            $exito = ABM_FuncionCine::modificarFuncionCine($idfuncion, $nombreFuncion, $horaInicio, $duracion, $precioFuncion, $unTeatro, $pais, $genero);
             break;
         case "FuncionMusical":
             echo "Ingrese el director:\n";
             $director = trim(fgets(STDIN));
             echo "Ingrese la cantidad de espectadores:\n";
             $reparto = trim(fgets(STDIN));
-            $exito = ABM_FuncionMusical::modificarFuncionMusical($idfuncion, $nombreFuncion, $horaInicio, $duracion, $precioFuncion, $unTeatro->getIdTeatro(), $director, $reparto);
+            $exito = ABM_FuncionMusical::modificarFuncionMusical($idfuncion, $nombreFuncion, $horaInicio, $duracion, $precioFuncion, $unTeatro, $director, $reparto);
             break;
         case "FuncionTeatro":
-            $exito = ABM_FuncionTeatro::modificarFuncionTeatro($idfuncion, $nombreFuncion, $horaInicio, $duracion, $precioFuncion, $unTeatro->getIdTeatro());
+            $exito = ABM_FuncionTeatro::modificarFuncionTeatro($idfuncion, $nombreFuncion, $horaInicio, $duracion, $precioFuncion, $unTeatro);
     }
     if (!$exito) {
         echo "No se modificó la función porque el horario se solapa con el de otra funcion existente\n";
+    } else {
+        echo "La funcion se modifico con exito!!!!";
     }
 }
 
@@ -233,28 +261,30 @@ function bajaFuncion($unTeatro)
 {
     $unaFuncion = new Funcion();
     echo "Funciones disponibles en este teatro :\n";
-    $cadenaFunciones = $unTeatro->recorrerFunciones();
+   $funcionesTeatro = $unTeatro->recorrerFunciones();
+   $exito = false;
 
-    do{
-        echo $cadenaFunciones;
-    echo "Seleccione el id de la función a eliminar:\n";
-    $idfuncion = trim(fgets(STDIN));
-        $exito= $unaFuncion->buscar($idfuncion);
-    } while (!is_numeric($idfuncion) || !$exito );
 
-       // $unaFuncion = $unTeatro->buscarFuncion($idfuncion);
+        echo $funcionesTeatro;
+        echo "Seleccione el id de la función a eliminar:\n";
+        $idfuncion = trim(fgets(STDIN));
+        $unaFuncion=$unTeatro->obtenerFunciones($idfuncion);
+
         switch (get_class($unaFuncion)) {
             case "FuncionCine":
-                ABM_FuncionCine::bajaFuncionCine($idfuncion);
+                $exito = ABM_FuncionCine::bajaFuncionCine($idfuncion);
                 break;
             case "FuncionMusical":
-                ABM_FuncionMusical::bajaFuncionMusical($idfuncion);
+               $exito = ABM_FuncionMusical::bajaFuncionMusical($idfuncion);
                 break;
             case "FuncionTeatro":
-                ABM_FuncionTeatro::bajaFuncionTeatro($idfuncion);
+              $exito =  ABM_FuncionTeatro::bajaFuncionTeatro($idfuncion);
         }
-
-
+        if($exito){
+            echo "Funcion eliminada con exito!!!";
+        } else {
+            echo "No se ha podido eliminar la funcion elegida";
+        }
 }
 
 
@@ -278,17 +308,31 @@ function altaTeatro()
 function bajaTeatro()
 {
 
-
+        mostrarTeatros();
     do {
         $exito = false;
-        echo "Seleccione el id del teatro que desea eliminar o 0(cero) para volver al menu:\n";
+        echo "Seleccione el id del teatro que desea eliminar \n";
         $idteatro = trim(fgets(STDIN));
         $exito = ABM_Teatro::eliminarTeatro($idteatro);
 
-        if($exito){
-                  echo "Se ha eliminado con exito el teatro de la BD\n";
-                 }
-    } while ($idteatro <> 0);
+        if($exito)
+        {
+            echo "Se ha eliminado con exito el teatro de la BD\n";
+        }  else {
+            echo "No se pudo eliminar el teatro seleccionado";
+        }
+    } while (!is_numeric($idteatro));
+
+}
+
+function mostrarTeatros()
+{
+    $teatroTemp = new Teatro();
+    $teatros = $teatroTemp->listar();
+
+        foreach ($teatros as $teatro)
+            print $teatro->__toString();
+            echo "---------------------------\n";
 
 }
 

@@ -4,7 +4,6 @@ class FuncionMusical extends Funcion
 {
  private $director;
  private $cantPersonas;
- private $mensajeoperacion;
 
 
     public function __construct()
@@ -13,7 +12,8 @@ class FuncionMusical extends Funcion
         $this->cantPersonas = 0;
     }
 
-    public function cargar($funcion){
+    public function cargar($funcion)
+    {
         parent::cargar($funcion);
         $this->setDirector($funcion['director']);
         $this->setCantPersonas($funcion['cantidad_personas']);
@@ -39,10 +39,6 @@ class FuncionMusical extends Funcion
         $this->cantPersonas = $cantPers;
     }
 
-    public function getMensajeoperacion()
-    {
-        return $this->mensajeoperacion;
-    }
 
     public function setMensajeoperacion($mensajeoperacion): void
     {
@@ -52,23 +48,23 @@ class FuncionMusical extends Funcion
     public function __toString(): string
     {
         $cadena = parent::__toString();
-        $cadena.= "Director:{$this->getDirector()} \nPersonas en Escena:{$this->getCantPersonas()}\n";
+        $cadena.= "Director: {$this->getDirector()}\nPersonas en Escena: {$this->getCantPersonas()}\n";
         return $cadena;
 
     }
 
     public function calcularCosto()
-    { //Teniendo en cuenta que el costo es lo que se le aplica al total solo se vera reflejado el interes no la suma de la entrada+interes (no *1.12)
+    {
         return parent::calcularCosto() * 0.12;
     }
 
     public function buscar($idfuncion)
     {
         $base = new BaseDatos();
-        $consultaFuncion = "SELECT * FROM funcion_musical WHERE idfuncion={$idfuncion}";
+        $consulta = "SELECT * FROM funcion_musical WHERE idfuncion={$idfuncion}";
         $exito = false;
         if ($base->Iniciar()) {
-            if ($base->Ejecutar($consultaFuncion)) {
+            if ($base->Ejecutar($consulta)) {
                 if ($row2 = $base->Registro()) {
                     parent::buscar($idfuncion);
                     $this->setDirector($row2['director']);
@@ -86,19 +82,19 @@ class FuncionMusical extends Funcion
 
     public function listar($condicion = "")
     {
-        $auxMusical = null;
+        $colFuncMusical = null;
         $base = new BaseDatos();
-        $consulta = "SELECT * FROM funcion_musical m, funcion f";
+        $consulta = "SELECT * FROM funcion INNER JOIN funcion_musical m on funcion.idfuncion = m.idfuncion";
         if ($condicion != "") {
             $consulta = "{$consulta} WHERE {$condicion}";
         }
         if ($base->Iniciar()) {
             if ($base->Ejecutar($consulta)) {
-                $auxMusical = array();
+                $colFuncMusical = array();
                 while ($row2 = $base->Registro()) {
-                    $objMusical = new FuncionMusical();
-                    $objMusical->cargar($row2);
-                    array_push($auxMusical, $objMusical);
+                    $funcionMusical = new FuncionMusical();
+                    $funcionMusical->buscar($row2['idfuncion']);
+                    array_push($colFuncMusical, $funcionMusical);
                 }
             } else {
                 $this->setmensajeoperacion($base->getError());
@@ -106,7 +102,7 @@ class FuncionMusical extends Funcion
         } else {
             $this->setmensajeoperacion($base->getError());
         }
-        return $auxMusical;
+        return $colFuncMusical;
     }
 
     public function insertar()
@@ -114,8 +110,8 @@ class FuncionMusical extends Funcion
         $base = new BaseDatos();
         $exito = false;
         if (parent::insertar()) {
-            $consulta = "INSERT INTO funcion_musical VALUES(" . parent::getIdFuncion() . ",'{$this->getDirector()}','{$this->getCantPersonas()}')";
-            echo $consulta;
+            $consulta = "INSERT INTO funcion_musical(idfuncion,director,cantidad_personas) 
+                VALUES(" . parent::getIdFuncion() . ",'{$this->getDirector()}','{$this->getCantPersonas()}')";
             if ($base->Iniciar()) {
                 if ($base->Ejecutar($consulta)) {
                     $exito = true;

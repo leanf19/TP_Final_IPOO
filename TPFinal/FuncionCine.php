@@ -51,31 +51,29 @@ class FuncionCine extends Funcion
     public function __toString(): string
     {
         $cadena = parent::__toString();
-        $cadena.= "Genero:{$this->getGenero()}
-                 \nPais:{$this->getPais()}\n";
+        $cadena.= "Genero: {$this->getGenero()}\nPais: {$this->getPais()}\n";
         return $cadena;
 
     }
 
     public function calcularCosto()
-    { //Teniendo en cuenta que el costo es lo que se le aplica al total solo se vera reflejado el interes no la suma de la entrada+interes (no *1.65)
+    {
         return parent::calcularCosto() * 0.65;
     }
 
     public function buscar($idfuncion)
     {
+
         $base = new BaseDatos();
         $consulta = "SELECT * FROM funcion_cine WHERE idfuncion={$idfuncion}";
-        echo $consulta;
-        $resp = false;
+        $exito = false;
         if ($base->Iniciar()) {
             if ($base->Ejecutar($consulta)) {
                 if ($row2 = $base->Registro()) {
-
                     parent::buscar($idfuncion);
                     $this->setGenero($row2['genero']);
                     $this->setPais($row2['pais_origen']);
-                    $resp = true;
+                    $exito = true;
                 }
             } else {
                 $this->setmensajeoperacion($base->getError());
@@ -83,24 +81,24 @@ class FuncionCine extends Funcion
         } else {
             $this->setmensajeoperacion($base->getError());
         }
-        return $resp;
+        return $exito;
     }
 
     public function listar($condicion = "")
     {
-        $auxCine = null;
+        $colFuncionCine = null;
         $base = new BaseDatos();
-        $consulta = "SELECT * FROM funcion_cine";
+        $consulta = "SELECT * FROM funcion INNER JOIN funcion_cine c on funcion.idfuncion = c.idfuncion";
         if ($condicion != "") {
             $consulta = "{$consulta} WHERE {$condicion}";
         }
         if ($base->Iniciar()) {
             if ($base->Ejecutar($consulta)) {
-                $auxCine = array();
+                $colFuncionCine = array();
                 while ($row2 = $base->Registro()) {
-                    $objCine = new FuncionCine();
-                    $objCine->Buscar($row2['nrodoc']);
-                    array_push($auxCine, $objCine);
+                    $funcionCine = new FuncionCine();
+                    $funcionCine->buscar($row2['idfuncion']);
+                    array_push($colFuncionCine, $funcionCine);
                 }
             } else {
                 $this->setmensajeoperacion($base->getError());
@@ -108,7 +106,7 @@ class FuncionCine extends Funcion
         } else {
             $this->setmensajeoperacion($base->getError());
         }
-        return $auxCine;
+        return $colFuncionCine;
     }
 
     public function insertar()
@@ -116,12 +114,10 @@ class FuncionCine extends Funcion
         $base = new BaseDatos();
         $exito = false;
         if (parent::insertar()) {
-            echo "se inserto en el padre\n";
-            $consultaInsertar = "INSERT INTO funcion_cine(idfuncion,genero,pais_origen) VALUES(" . parent::getIdFuncion() . ",'{$this->getGenero()}','{$this->getPais()}')";
+            $consulta = "INSERT INTO funcion_cine(idfuncion,genero,pais_origen)
+            VALUES(" . parent::getIdFuncion() . ",'{$this->getGenero()}','{$this->getPais()}')";
             if ($base->Iniciar()) {
-                echo $consultaInsertar;
-                if ($base->Ejecutar($consultaInsertar)) {
-                    echo "se inserto en el hijo";
+                if ($base->Ejecutar($consulta)) {
                     $exito = true;
                 } else {
                     $this->setmensajeoperacion($base->getError());
@@ -138,10 +134,11 @@ class FuncionCine extends Funcion
         $exito = false;
         $base = new BaseDatos();
         if (parent::modificar()) {
-            $consultaModifica = "UPDATE funcion_cine SET genero='{$this->getGenero()}', pais_origen='{$this->getPais()}' 
+            $consulta = "UPDATE funcion_cine SET genero='{$this->getGenero()}', pais_origen='{$this->getPais()}' 
         WHERE idfuncion =".parent::getIdfuncion();
+            echo $consulta;
             if ($base->Iniciar()) {
-                if ($base->Ejecutar($consultaModifica)) {
+                if ($base->Ejecutar($consulta)) {
                     $exito = true;
                 } else {
                     $this->setmensajeoperacion($base->getError());

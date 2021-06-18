@@ -27,6 +27,8 @@ class Teatro
         $this->setIdteatro($idteatro);
         $this->setNombre($nombre);
         $this->setDireccion($direccion);
+
+      //  $this->actualizarFunciones();
     }
 
     public function getNombre()
@@ -37,11 +39,11 @@ class Teatro
     {
         return $this->direccion;
     }
-    public function getFunciones()
+   /* public function getFunciones()
     {
         return $this->funciones;
 
-    }
+    }*/
 
 
     public function getIdTeatro()
@@ -49,6 +51,16 @@ class Teatro
         return $this->idTeatro;
     }
 
+    public function getFunciones()
+    {
+        $this->actualizarFunciones();
+        return $this->funciones;
+    }
+
+    public function getUnaFuncion($indice)
+    {
+        return $this->funciones($indice);
+    }
 
 
     public function setIdTeatro($idTeatro)
@@ -68,9 +80,9 @@ class Teatro
     }
 
 
-    public function setFunciones(array $func)
+    public function setFunciones($colFunciones)
     {
-        $this->funciones = $func;
+        $this->funciones = $colFunciones;
     }
 
 
@@ -79,6 +91,7 @@ class Teatro
             $consultaTeatro = "SELECT * FROM teatro WHERE idteatro={$idteatro}";
             $exito= false;
             if($base->Iniciar()){
+
                 if($base->Ejecutar($consultaTeatro)){
 
                     if($row2=$base->Registro()){
@@ -180,7 +193,7 @@ class Teatro
                     $funcion->eliminar();
                 }
             }
-            $consulta = "DELETE FROM teatro WHERE idTeatro= {$this->getIdTeatro()}";
+            $consulta = "DELETE FROM teatro WHERE idTeatro={$this->getIdTeatro()}";
             if ($base->Ejecutar($consulta)) {
                 $exito = true;
             } else {
@@ -193,7 +206,7 @@ class Teatro
     }
 
 
-
+/*
 
     public function agregarFunciones($index, $unaFuncion)
     {
@@ -258,6 +271,9 @@ class Teatro
                 break;
         }
     }
+*/
+
+
     //Transforma una hora en formato hh:mm en minutos
     public function aMinutos($horario){
         $horas = (int)substr($horario,0,2);
@@ -313,7 +329,8 @@ class Teatro
     {
         $salida = "";
         foreach ($this->getFunciones() as $funcion) {
-            $salida .= "----------------------------------------\n";
+            $nombreClase = get_class($funcion);
+            $salida .= $nombreClase." ";
             $salida .= $funcion->__toString();
             $salida .= "----------------------------------------\n";
         }
@@ -323,10 +340,8 @@ class Teatro
 
     public function __toString()
     {
-        $salida = "\nIdTeatro: {$this->getIdTeatro()}
-                   \nNombre teatro: {$this->getNombre()}
-                   \nDireccion: {$this->getDireccion()}
-                    \nFunciones disponibles:\n";
+        $salida = "\n-----------------------------------------------
+                    \nIdTeatro: {$this->getIdTeatro()}\nNombre teatro: {$this->getNombre()}\nDireccion: {$this->getDireccion()}\nFunciones disponibles:\n-----------------------------------------------\n";
         //a continuacion se muestra cada funcion del arreglo
         $salida .= $this->concatenarFunciones();
 
@@ -335,11 +350,12 @@ class Teatro
     //Recorre tod* el arreglo, concatena y devuelve al __toString
     public function concatenarFunciones()
     {
+        $colFunciones = $this->getFunciones();
         $i=0;
         $salida = "";
-        foreach ($this->funciones as $funcion) {
-            $salida .= "-----------------------------------------------\n";
-            $salida .= "Funcion $i:";
+        foreach ($colFunciones as $funcion) {
+            $nombreClase = get_class($funcion);
+            $salida .= $nombreClase." ";
             $salida .= $funcion->__toString();
             $salida .= "-----------------------------------------------\n";
             $i++;
@@ -356,18 +372,33 @@ class Teatro
         }
         return $costo;
     }
-    //comprueba que el horario entre funciones no se solape
-    public function comprobarFuncion($funcion)
+
+
+
+        //actualiza las funciones del arreglo de funciones en Teatro
+    private function actualizarFunciones()
     {
-        $exito = false;
-        $idfuncion = $funcion->getIdfuncion();
-        $horaIni = $funcion->getHorainicio();
-        $dur =  $funcion->getDuracion();
-        if ($this->comprobarHorario($idfuncion,$horaIni,$dur)) {
-            //$tempFunciones = $this->getFunciones();
-           // $tempFunciones[] = $funcion;
-           // $this->setFunciones($tempFunciones);
-            $exito = true;
+        $auxFunCine = new FuncionCine();
+        $auxMusical = new FuncionMusical();
+        $auxFunTeatro = new FuncionTeatro();
+
+        $funcionCine = $auxFunCine->listar("idteatro={$this->getIdteatro()}");
+
+        $funcionMusical = $auxMusical->listar("idteatro={$this->getIdteatro()}");
+
+        $funcionTeatro = $auxFunTeatro->listar("idteatro={$this->getIdteatro()}");
+
+        $this->setFunciones(array_merge($funcionCine, $funcionMusical, $funcionTeatro));
+    }
+
+    public function obtenerFunciones($idfuncion)
+    {
+        $exito = null;
+        foreach ($this->getFunciones() as $funcion) {
+            if (strtolower($funcion->getIdFuncion()) == $idfuncion) {
+                $exito = $funcion;
+                break;
+            }
         }
         return $exito;
     }
