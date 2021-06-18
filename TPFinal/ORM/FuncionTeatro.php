@@ -21,6 +21,12 @@ class FuncionTeatro extends Funcion
         parent::cargar($funcion);
      }
 
+     //implementacion alternativa de la funcion cargar
+   /* public function cargarObjFuncion($idfuncion,$nombre,$horaInicio,$duracion,$precio,$objTeatro)
+    {
+        parent::cargarObjFuncion($idfuncion,$nombre,$horaInicio,$duracion,$precio,$objTeatro);
+    } */
+
     public function buscar($idfuncion)
     {
         $base = new BaseDatos();

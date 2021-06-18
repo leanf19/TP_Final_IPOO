@@ -1,6 +1,6 @@
 <?php
 
-require_once 'FuncionTeatro.php';
+require_once ('ORM/FuncionTeatro.php');
 
 class ABM_FuncionTeatro
 {

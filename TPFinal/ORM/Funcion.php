@@ -43,6 +43,17 @@ class Funcion
         $this->setObjTeatro($funcion['objteatro']);
     }
 
+  /*  public function cargarObjFuncion($idfuncion,$nombre,$horaInicio,$duracion,$precio,$objTeatro)
+    {
+        $this->setIdfuncion($idfuncion);
+        $this->setNombre($nombre);
+        $this->setHorainicio($horaInicio);
+        $this->setDuracion($duracion);
+        $this->setPrecio($precio);
+        $this->setObjTeatro($objTeatro);
+    }
+  */
+
     public function getNombre()
     {
         return $this->nombre;
@@ -109,7 +120,7 @@ class Funcion
     {
         $horaIni=$this->getHoraInicio();
         $horaIni= substr($horaIni,0,5);
-        $cadena = "\nIdFuncion: {$this->idfuncion}\nNombre de la funcion: {$this->getNombre()}\nHora de inicio: {$horaIni}\nDuracion: {$this->getDuracion()}\nPrecio: {$this->getPrecio()}\n";
+        $cadena = "\nIdFuncion: {$this->idfuncion}\nNombre de la funcion: {$this->getNombre()}\nHora de inicio: {$horaIni}\nDuracion: {$this->getDuracion()} minutos\nPrecio: {$this->getPrecio()}\n";
 
         return $cadena;
     }
@@ -146,12 +157,12 @@ class Funcion
     {
         $colFunciones = null;
         $base = new BaseDatos();
-        $consultaFuncion = "SELECT * FROM funcion";
+        $consulta = "SELECT * FROM funcion";
         if ($condicion != "") {
-            $consultaFuncion = "{$consultaFuncion} WHERE {$condicion}";
+            $consulta = "{$consulta} WHERE {$condicion}";
         }
         if ($base->Iniciar()) {
-            if ($base->Ejecutar($consultaFuncion)) {
+            if ($base->Ejecutar($consulta)) {
                 $colFunciones = array();
                 while ($row2 = $base->Registro()) {
                     //$idTeatro = $row2['idteatro'];

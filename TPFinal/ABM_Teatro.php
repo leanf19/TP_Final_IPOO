@@ -1,8 +1,8 @@
 <?php
 
 
-require_once'Teatro.php';
-require_once'Funcion.php';
+require_once ('ORM/Teatro.php');
+require_once ('ORM/Funcion.php');
 
 class ABM_Teatro
 {   //Alta:Teatro - se encarga de cargar, comprobar e insertar un nuevo Teatro en la BD

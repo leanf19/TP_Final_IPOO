@@ -1,5 +1,5 @@
 <?php
-require_once "Teatro.php";
+require_once ("ORM/Teatro.php");
 require_once "ABM_Teatro.php";
 require_once "ABM_FuncionMusical.php";
 require_once "ABM_FuncionCine.php";
@@ -189,7 +189,7 @@ function altaFuncion($unTeatro)
         case "musical":
             echo "Ingrese el director:\n";
             $director = trim(fgets(STDIN));
-            echo "Ingrese la cantidad de espectadores:\n";
+            echo "Ingrese la cantidad de personas en escena:\n";
             $elenco = trim(fgets(STDIN));
             $exito = ABM_FuncionMusical::altaFuncionMusical(0, $nombreFuncion, $horaInicio, $duracion, $precio, $unTeatro, $director, $elenco);
             break;
@@ -243,9 +243,9 @@ function modificarFuncion($unTeatro)
         case "FuncionMusical":
             echo "Ingrese el director:\n";
             $director = trim(fgets(STDIN));
-            echo "Ingrese la cantidad de espectadores:\n";
-            $reparto = trim(fgets(STDIN));
-            $exito = ABM_FuncionMusical::modificarFuncionMusical($idfuncion, $nombreFuncion, $horaInicio, $duracion, $precioFuncion, $unTeatro, $director, $reparto);
+            echo "Ingrese la cantidad de personas en escena:\n";
+            $elenco = trim(fgets(STDIN));
+            $exito = ABM_FuncionMusical::modificarFuncionMusical($idfuncion, $nombreFuncion, $horaInicio, $duracion, $precioFuncion, $unTeatro, $director, $elenco);
             break;
         case "FuncionTeatro":
             $exito = ABM_FuncionTeatro::modificarFuncionTeatro($idfuncion, $nombreFuncion, $horaInicio, $duracion, $precioFuncion, $unTeatro);

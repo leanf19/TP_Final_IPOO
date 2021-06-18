@@ -1,7 +1,7 @@
 <?php
 
 
-require_once'FuncionCine.php';
+require_once ('ORM/FuncionCine.php');
 
 class ABM_FuncionCine
 {

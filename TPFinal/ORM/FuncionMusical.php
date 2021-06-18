@@ -1,45 +1,49 @@
 <?php
-require 'Funcion.php';
 
-
-class FuncionCine extends Funcion
+class FuncionMusical extends Funcion
 {
-    private $genero;
-    private $pais;
-
+ private $director;
+ private $cantPersonas;
 
 
     public function __construct()
     {   parent:: __construct();
-        $this->genero = "";
-        $this->pais = "";
+        $this->director = "";
+        $this->cantPersonas = 0;
     }
 
     public function cargar($funcion)
     {
         parent::cargar($funcion);
-        $this->setGenero($funcion['genero']);
-        $this->setPais($funcion['pais_origen']);
+        $this->setDirector($funcion['director']);
+        $this->setCantPersonas($funcion['cantidad_personas']);
+    }
+//implementacion alternativa de la funcion cargar
+   /* public function cargarObjFuncion($idfuncion,$nombre,$horaInicio,$duracion,$precio,$objTeatro,$director,$cantPersonas)
+    {
+        parent::cargarObjTeatro($idfuncion,$nombre,$horaInicio,$duracion,$precio,$objTeatro);
+        $this->setDirector($director);
+        $this->setCantPersonas($cantPersonas);
+    } */
+
+    public function getDirector()
+    {
+        return $this->director;
     }
 
-    public function getGenero()
+    public function setDirector($dir): void
     {
-        return $this->genero;
+        $this->director = $dir;
     }
 
-    public function setGenero($igenero): void
+    public function getCantPersonas()
     {
-        $this->genero = $igenero;
+        return $this->cantPersonas;
     }
 
-    public function getPais()
+    public function setCantPersonas($cantPers): void
     {
-        return $this->pais;
-    }
-
-    public function setPais($ipais): void
-    {
-        $this->pais = $ipais;
+        $this->cantPersonas = $cantPers;
     }
 
 
@@ -51,28 +55,27 @@ class FuncionCine extends Funcion
     public function __toString(): string
     {
         $cadena = parent::__toString();
-        $cadena.= "Genero: {$this->getGenero()}\nPais: {$this->getPais()}\n";
+        $cadena.= "Director: {$this->getDirector()}\nPersonas en Escena: {$this->getCantPersonas()}\n";
         return $cadena;
 
     }
 
     public function calcularCosto()
     {
-        return parent::calcularCosto() * 0.65;
+        return parent::calcularCosto() * 0.12;
     }
 
     public function buscar($idfuncion)
     {
-
         $base = new BaseDatos();
-        $consulta = "SELECT * FROM funcion_cine WHERE idfuncion={$idfuncion}";
+        $consulta = "SELECT * FROM funcion_musical WHERE idfuncion={$idfuncion}";
         $exito = false;
         if ($base->Iniciar()) {
             if ($base->Ejecutar($consulta)) {
                 if ($row2 = $base->Registro()) {
                     parent::buscar($idfuncion);
-                    $this->setGenero($row2['genero']);
-                    $this->setPais($row2['pais_origen']);
+                    $this->setDirector($row2['director']);
+                    $this->setCantPersonas($row2['cantidad_personas']);
                     $exito = true;
                 }
             } else {
@@ -86,19 +89,19 @@ class FuncionCine extends Funcion
 
     public function listar($condicion = "")
     {
-        $colFuncionCine = null;
+        $colFuncMusical = null;
         $base = new BaseDatos();
-        $consulta = "SELECT * FROM funcion INNER JOIN funcion_cine c on funcion.idfuncion = c.idfuncion";
+        $consulta = "SELECT * FROM funcion INNER JOIN funcion_musical m on funcion.idfuncion = m.idfuncion";
         if ($condicion != "") {
             $consulta = "{$consulta} WHERE {$condicion}";
         }
         if ($base->Iniciar()) {
             if ($base->Ejecutar($consulta)) {
-                $colFuncionCine = array();
+                $colFuncMusical = array();
                 while ($row2 = $base->Registro()) {
-                    $funcionCine = new FuncionCine();
-                    $funcionCine->buscar($row2['idfuncion']);
-                    array_push($colFuncionCine, $funcionCine);
+                    $funcionMusical = new FuncionMusical();
+                    $funcionMusical->buscar($row2['idfuncion']);
+                    array_push($colFuncMusical, $funcionMusical);
                 }
             } else {
                 $this->setmensajeoperacion($base->getError());
@@ -106,7 +109,7 @@ class FuncionCine extends Funcion
         } else {
             $this->setmensajeoperacion($base->getError());
         }
-        return $colFuncionCine;
+        return $colFuncMusical;
     }
 
     public function insertar()
@@ -114,8 +117,8 @@ class FuncionCine extends Funcion
         $base = new BaseDatos();
         $exito = false;
         if (parent::insertar()) {
-            $consulta = "INSERT INTO funcion_cine(idfuncion,genero,pais_origen)
-            VALUES(" . parent::getIdFuncion() . ",'{$this->getGenero()}','{$this->getPais()}')";
+            $consulta = "INSERT INTO funcion_musical(idfuncion,director,cantidad_personas) 
+                VALUES(" . parent::getIdFuncion() . ",'{$this->getDirector()}','{$this->getCantPersonas()}')";
             if ($base->Iniciar()) {
                 if ($base->Ejecutar($consulta)) {
                     $exito = true;
@@ -133,10 +136,9 @@ class FuncionCine extends Funcion
     {
         $exito = false;
         $base = new BaseDatos();
+        $consulta = "UPDATE funcion_musical SET director='{$this->getDirector()}', cantidad_personas={$this->getCantPersonas()}
+        WHERE idfuncion =" . parent::getIdfuncion();
         if (parent::modificar()) {
-            $consulta = "UPDATE funcion_cine SET genero='{$this->getGenero()}', pais_origen='{$this->getPais()}' 
-        WHERE idfuncion =".parent::getIdfuncion();
-            echo $consulta;
             if ($base->Iniciar()) {
                 if ($base->Ejecutar($consulta)) {
                     $exito = true;
@@ -155,7 +157,7 @@ class FuncionCine extends Funcion
         $base = new BaseDatos();
         $exito = false;
         if ($base->Iniciar()) {
-            $consulta = "DELETE FROM funcion_cine WHERE idfuncion=" . parent::getIdfuncion();
+            $consulta = "DELETE FROM funcion_musical WHERE idfuncion=" . parent::getIdfuncion();
             if ($base->Ejecutar($consulta)) {
                 $exito = true;
                 parent::eliminar();
@@ -167,7 +169,5 @@ class FuncionCine extends Funcion
         }
         return $exito;
     }
-
-
 
 }
